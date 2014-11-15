@@ -16,6 +16,28 @@ mapEl.style.height = (window.innerHeight - mapEl.offsetTop) + 'px';
 var data = require('./data.json');
 data = createImageArrays(data);
 
+var checkedCategories = [];
+var menu = document.getElementById('menu');
+categories = getAllCategories(data);
+console.log(categories);
+if (categories.length > 0) {
+  menu.appendChild(document.createTextNode('Filter by category: '));
+}
+categories.forEach(function addCheckbox(item) {
+  var checkbox = document.createElement('input');
+  checkbox.className = 'categoryCheckbox';
+  checkbox.type = 'checkbox';
+  checkbox.name = item;
+  checkbox.value = item;
+  checkbox.addEventListener('change', updateWithFilters);
+
+  var label = document.createElement('label');
+  label.appendChild(document.createTextNode(item));
+
+  menu.appendChild(checkbox);
+  menu.appendChild(label);
+})
+
 L.mapbox.accessToken = 'pk.eyJ1Ijoic2V0aHZpbmNlbnQiLCJhIjoiSXZZXzZnUSJ9.Nr_zKa-4Ztcmc1Ypl0k5nw';
 
 
@@ -90,6 +112,38 @@ window.onresize = function (e) {
 
 data.forEach(addMarker);
 
+function updateWithFilters() {
+  checkedCategories = [];
+  var categoryCheckboxes = document.getElementsByClassName('categoryCheckbox');
+  for (var i = 0; i < categoryCheckboxes.length; i++) {
+      if (categoryCheckboxes[i].checked) {
+	  checkedCategories.push(categoryCheckboxes[i]);
+      }
+  }
+  map.featureLayer.setFilter(
+  data.filter(filterByCategory).forEach(addMarker);
+}
+
+function filterByCategory(element) {
+  return element.category in checkedCategories;
+}
+
+function containsCategory(categories, c) {
+  for (var i = 0; i < categories.length; i++) {
+    if (categories[i] === c) return true;
+  }
+  return false;
+}
+
+function getAllCategories(data) {
+  var categories = [];
+  for (var i = 0; i < data.length; i++) {
+    if (!containsCategory(categories, data[i].category)) {
+	categories.push(data[i].category);
+    }
+  }
+  return categories;
+}
 
 /* 
 * add a marker to map from json data 

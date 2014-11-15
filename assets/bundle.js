@@ -17,6 +17,28 @@ mapEl.style.height = (window.innerHeight - mapEl.offsetTop) + 'px';
 var data = require('./data.json');
 data = createImageArrays(data);
 
+var checkedCategories = [];
+var menu = document.getElementById('menu');
+categories = getAllCategories(data);
+console.log(categories);
+if (categories.length > 0) {
+  menu.appendChild(document.createTextNode('Filter by category: '));
+}
+categories.forEach(function addCheckbox(item) {
+  var checkbox = document.createElement('input');
+  checkbox.className = 'categoryCheckbox';
+  checkbox.type = 'checkbox';
+  checkbox.name = item;
+  checkbox.value = item;
+  checkbox.addEventListener('change', updateWithFilters);
+
+  var label = document.createElement('label');
+  label.appendChild(document.createTextNode(item));
+
+  menu.appendChild(checkbox);
+  menu.appendChild(label);
+})
+
 L.mapbox.accessToken = 'pk.eyJ1Ijoic2V0aHZpbmNlbnQiLCJhIjoiSXZZXzZnUSJ9.Nr_zKa-4Ztcmc1Ypl0k5nw';
 
 
@@ -27,7 +49,7 @@ L.mapbox.accessToken = 'pk.eyJ1Ijoic2V0aHZpbmNlbnQiLCJhIjoiSXZZXzZnUSJ9.Nr_zKa-4
 var templates = {};
 
 templates.info = Handlebars.compile(
-  "<section class=\"modal-inner\">\n  <a id=\"close-modal\" href=\"#\">x</a>\n  <h2 class=\"location-title\">{{ title }}</h2>\n  \n  {{#each images}}\n  <div class=\"image\">\n    <img src=\"{{ this }}\">\n  </div>\n  {{/each}}\n  \n  <div class=\"text\">\n    {{{ text }}}\n  </div>\n  <!--\n  <p><b><a href=\"{{ link }}\" target=\"_blank\">Learn more</a></b></p>\n  -->\n</section>\n"
+  "<section class=\"modal-inner\">\n  <a id=\"close-modal\" href=\"#\">x</a>\n  <h2 class=\"location-title\">{{ title }}</h2>\n  <div class=\"text\">\n    Category: {{{ category }}}\n  </div>\n  \n  {{#each images}}\n  <div class=\"image\">\n    <img src=\"{{ this }}\">\n  </div>\n  {{/each}}\n  \n  <div class=\"text\">\n    {{{ text }}}\n  </div>\n\n  <!--\n  <p><b><a href=\"{{ link }}\" target=\"_blank\">Learn more</a></b></p>\n  -->\n</section>\n"
 );
 
 templates.list = Handlebars.compile(
@@ -91,6 +113,38 @@ window.onresize = function (e) {
 
 data.forEach(addMarker);
 
+function updateWithFilters() {
+  checkedCategories = [];
+  var categoryCheckboxes = document.getElementsByClassName('categoryCheckbox');
+  for (var i = 0; i < categoryCheckboxes.length; i++) {
+      if (categoryCheckboxes[i].checked) {
+	  checkedCategories.push(categoryCheckboxes[i]);
+      }
+  }
+  map.clearLayers();
+  data.filter(filterByCategory).forEach(addMarker);
+}
+
+function filterByCategory(element) {
+  return element.category in checkedCategories;
+}
+
+function containsCategory(categories, c) {
+  for (var i = 0; i < categories.length; i++) {
+    if (categories[i] === c) return true;
+  }
+  return false;
+}
+
+function getAllCategories(data) {
+  var categories = [];
+  for (var i = 0; i < data.length; i++) {
+    if (!containsCategory(categories, data[i].category)) {
+	categories.push(data[i].category);
+    }
+  }
+  return categories;
+}
 
 /* 
 * add a marker to map from json data 
@@ -160,8 +214,9 @@ function createImageArrays (data) {
   
   return data;
 }
+
 },{"./data.json":2,"component-delegate":3,"element-class":8,"fastclick":9,"geolocation-stream":10,"handlebars":25,"leaflet":26,"mapbox.js":39}],2:[function(require,module,exports){
-module.exports=[{"type":"Audio Recording (at Soundcloud), Text","audio":"<iframe width=\"100%\" height=\"166\" scrolling=\"no\" frameborder=\"no\" src=\"https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/166005226&amp;color=ff5500&amp;auto_play=false&amp;hide_related=false&amp;show_comments=true&amp;show_user=true&amp;show_reposts=false\"></iframe>","link":"","photos":"\n","text":"On a day in early August, a group of children walked along with their two summer camp leaders, along Seward Park's Sqebeqsed Trail -- also known as the Spine Trail -- in southeast Seattle. A man stood in the forest, playing a sort of metal sitar and singing.","title":"Heard Along Sqebeqsed Trail","credit":"Wendy Call","lat":"47.549586","long":"-122.251114","??":""},{"type":"Photograph & Text","audio":"\n","link":"","photos":"https://lh6.googleusercontent.com/-laz6IzwfUwc/VAqNJ-qIzUI/AAAAAAAAAQc/1MfQi-BqSBk/s640/IMG_1581.JPG","text":"In 1923, the people of Yokohama sent us an eight-ton stone lantern as a thank-you for offering help after an earthquake killed thirty thousand Yokohamans. Two decades later, our bombs killed another eight thousand in that city. Nine decades later, the lantern stands amid Japanese maple and Pacific rhododendron; the scents of dogshit, human urine, and sun-wilted summer flowers swirl around it. The taiko-gata lantern was a gift, an oxidized plaque tells us, “symbolizing the peace and good-will that exists between Japan and the United States.” ","title":"Yokohama Taiko-Gata Lantern","credit":"Wendy Call","lat":"47.54976","long":"-122.257427","??":""},{"type":"Text & 2 Photographs","audio":"","link":"","photos":"https://lh3.googleusercontent.com/-WVjLlF6m0QY/VAqNS1g1VbI/AAAAAAAAASs/ebS0q9aTmIY/s800/ClayStudioWPAsign.jpg, https://lh5.googleusercontent.com/-l6WxUHEo6FE/VAqNUewl5bI/AAAAAAAAAS0/wVkZTYi4pjI/s912/AndrewsBay2012.jpg","text":"Turn to the east, face our past. Turn to the west, face your reflection.","title":"At the Clay Studio","credit":"Wendy Call","lat":"47.54976","long":"-122.257427","??":""},{"type":"Photograph & Text","audio":"\n","link":"","photos":"https://lh5.googleusercontent.com/-brrqjzTEO9E/VAqNWhuwxWI/AAAAAAAAARc/UvvoLYSGbec/s512/BathroomSkylight.jpg","text":"Bathroom view of Seattle sky: Moss molders. Leaves linger.","title":"Women's Room","credit":"Wendy Call","lat":"47.549759","long":"-122.256475","??":""},{"type":"Photograph & Text","audio":"","link":"","photos":"https://lh6.googleusercontent.com/--0gOlO0zoIQ/VAqNVp4pH8I/AAAAAAAAAS8/vCPl1L4SS_g/s912/MtRainierfromBikeRack.jpg","text":"People shout at one another; sausage dogs trot on tangled leashes; kids feel the sting of hand-slaps and admonishment. (“You are not an adult!”) Over it all, over Lake Washington, Tahoma hovers. Impervious and imperial. Our land bows down to our mountain. Vine maple branches frame the mountain peak, with Mercer Island to the east and the low bump of Rainier Beach to the southwest.","title":"Rainier, Bikerack View","credit":"Wendy Call","lat":"47.549564","long":"-122.256661","??":""},{"type":"Photograph & Text","audio":"","link":"","photos":"https://lh5.googleusercontent.com/-C8J91pcbMBY/VAvVb7YyQDI/AAAAAAAAATY/pLWwDLoZLr4/s640/Bedrock.JPG","text":"Alki Beach and Seward Park, cardinal points on Seattle’s east-west axis, are connected by an invisible, treacherous line: the Seattle fault. An eon ago, an earthquake sent forests sliding into Lake Washington and a twenty-foot cliff bursting from the earth of Bailey Peninsula. Here on the north side of Seward Park, as at Alki, the quake broke bedrock though clay and moss, to the dim light of Northwestern days. ","title":"Scar(p)","credit":"Wendy Call","lat":"47.536475","long":"-122.255967","??":""},{"type":"Link & Text","audio":"\n","link":"Link the words \"her final interview\" to: ","photos":"","text":"In the last interview of her life, poet Denise Levertov said of Mount Rainier, \"When it's out, I can see it from my work room and my kitchen window. I usually take paper and pencil in my pocket when I go down to the park. Often something starts as I'm walking around there.\"","title":"","credit":"","lat":"47.560208","long":"-122.255403","??":""},{"type":"Link & Text","audio":"","link":"http://poems.com/special_features/prose/essay_warn.php","photos":"","text":"Seattle poet Emily Warn writes of Mount Rainier's influence on Denise Levertov, one of the most famous poets ever to live in Seattle: \"If 'Nature' in her poetry is a metonymy for spiritual understanding, then 'the mountain' stands for a divine presence hidden within, yet not of this material world....\"","title":"","credit":"","lat":"47.565792","long":"-122.253936","??":""},{"type":"Photograph & Link","audio":"","link":"http://spectatorspots.blogspot.com/2012/06/we-come-looking.html","photos":"https://lh4.googleusercontent.com/-Xc65nmKJFOE/VAqNexWarzI/AAAAAAAAATE/pZhjCjL9QBY/s576/IMG_3088.JPG","text":"In June 2012, over three weekend afternoons, I led two dozen writers through a writing and nature walk at Seward Park. This is what one of them, Kristianne Huntsberger, wrote. ","title":"A Writing Spot","credit":"","lat":"47.555297","long":"-122.254394","??":""},{"type":"Photograph","audio":"","link":"","photos":"http://cdn.c.photoshelter.com/img-get/I0000gcOguCU6ejo/s/900/900/American-Crow-portrait-Seward-Park-Seattle-9687.jpg","text":"","title":"American Crow","credit":"Thomas Bancroft","lat":"47.548889","long":"-122.256389","??":""},{"type":"Photograph","audio":"","link":"","photos":"http://cdn.c.photoshelter.com/img-get/I0000Rqic3mwa2Dw/s/900/900/Hawthorn-berries-Seward-Park-Seattle.jpg","text":"","title":"Hawthorn Berries","credit":"Thomas Bancroft","lat":"47.553611","long":"-122.250556","??":""},{"type":"Photograph","audio":"","link":"","photos":"http://cdn.c.photoshelter.com/img-get/I0000P0OCn0WSZAA/s/900/900/High-Bush-Craneberry-Seward-Park-Seattle.jpg","text":"","title":"High Bush Cranberry","credit":"Thomas Bancroft","lat":"47.551111","long":"-122.250833","??":""},{"type":"Photograph","audio":"","link":"","photos":"http://cdn.c.photoshelter.com/img-get/I00006tb8RILewic/s/900/900/Mallard-Seward-Park-Seattle-9465.jpg","text":"","title":"Mallard","credit":"Thomas Bancroft","lat":"47.548889","long":"-122.254722","??":""},{"type":"Photograph","audio":"","link":"","photos":"http://cdn.c.photoshelter.com/img-get/I0000TKsIYVed2cM/s/900/900/Seward-Park-Trail-Seward-Park-Seattle-1645.jpg","text":"","title":"Sqebeqsed Trail","credit":"Thomas Bancroft","lat":"47.556667","long":"-122.251944","??":""},{"type":"Photograph","audio":"","link":"","photos":"http://cdn.c.photoshelter.com/img-get/I0000oD1aRx_6ofk/s/900/900/Sunrise-at-Seward-Park-Seward-Park-Seattle.jpg","text":"","title":"Sunrise at South Beach","credit":"Thomas Bancroft","lat":"47.550278","long":"-122.248333","??":""},{"type":"Link & Text","audio":"","link":"","photos":"\n","text":"<p>My June 2012 writing workshops inspired one participating writer, Robert\n Francis Flor, to create a one-act play based on his memories of annual \npicnics on Pinoy Hill. </p><p style=\"text-align: center;\"><span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\">The beginning of a one-act play</span><em><span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\"> Pinoy Hill, Seward Park, 1957 </span></em><span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\">by Robert Francis Flor</span><br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<strong><span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\">Scene I </span></strong></p>\n<p><em><span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\">(Pinoy Hill in Seward Park, Seattle. 1957. Three picnic tables placed in a row. The table at one end is marked with a RESERVED sign. A teen boy sprawls across the center table.)</span></em><br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\"><strong>MAX:</strong> <em>(Acts bored. Swears.)</em> Why me? So unfair. <em>(Pounds table.) </em>It&rsquo;s the same every year. Boring. Same old dances. Same old table. Same music. Same faces. BORING! <em>(Lays down on bench next to table and closes eyes.)</em></span><br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<em><span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\">(An older Pinay woman (late-forties to early fifties) enters. She carries a shopping bag. Noticing him, she makes disgusting grunting and grumbling noises and mutters as she puts the bag on the table on the remaining, unreserved table.)</span></em><br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\"><strong>ROSARIO:</strong> Psst! Psst!</span><br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\"><strong>MAX: </strong><em>(Doesn&rsquo;t respond. Ignores her.)</em></span><br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\"><strong>ROSARIO:</strong> Psst! Halo! Magandang umaga sa iyo! <em>(MAX continues to ignore her.) </em>Boy! I said &ldquo;Halo!&rdquo;</span><br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\"><strong>MAX:</strong> I don&rsquo;t understand Filipino. An&rsquo; I&rsquo;m not a boy.</span><br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\"><strong>ROSARIO:</strong> Oh, American-born. I see. I said &ldquo;Hello. Good morning.&rdquo;</span><br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\"><strong>MAX: </strong><em>(Sits up.)</em> Can I help you?</span><br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\"><strong>ROSARIO:</strong> Are you saving that table? I would like it.</span><br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\"><strong>MAX:</strong> <em>(Stands.) </em>No can do, Auntie.</span><br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\"><strong>ROSARIO:</strong> Ha? Why &ldquo;no can do&rdquo;? You&rsquo;re the only one here. You use it just for sleep. My family is coming.</span><br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\"><strong>MAX:</strong> My dad would kill me if I gave up this table. I&rsquo;m saving it for my family. It&rsquo;s his orders.</span></p>\n\n","title":"Pinoy Hill, Seward Park, 1957","credit":"Robert Francis Flor","lat":"47.551975","long":"-122.255494","??":""},{"type":"Text & Photograph","audio":"","link":"","photos":"","text":"In a circle of vine maples, encircled today by black-and-yellow caution tape: Put your left hand on top of your right, pull down. And if you want to stop, just let go. Are you doing alright? The only adult in the group says, “I am pretty terrified.” They swing in harnesses, suspended from high vine-maple branches in their own, private rope swings. One boy hoists himself nearly to tree top, alights, and climbs around in tree-sky. “Oh, wow. How high is he up there?” He’s probably about at fifty feet. That’s like standing on top of a telephone pole. OK, kids, you’ve got fifteen minutes left. Some want to go higher, some are more than ready to return to earth. The tree-swingers have drawn a small crowd: a family of three and an older couple with matching white sun hats. A great blue egret stands pencil-slim on a South Bay piling. The boy who climbed to top-of-telephone-pole height, skims to the ground and leaps from the harness. “I had a piece of bark in my pants. How did that happen?” \nAnother boy swings fifteen feet off the ground, feet up, head down. Anybody remember what kind of tree you’re in? Only one does; the other children cheer. Two men jog by, one pushing a stroller, talking of 30K and 60K races. The climbing-swinging children are replaced by another group ready to harness up. Still, the heron waits. \n","title":"At the Vine Maples","credit":"Wendy Call","lat":"47.548802","long":"-122.256936","??":""},{"type":"Text & Photograph","audio":"","link":"","photos":"https://lh4.googleusercontent.com/-IraGuCoWVoA/VAqNPOxBwxI/AAAAAAAAAQ0/YOqE26Q3Lws/s720/IMG_2244.JPG","text":"Everywhere in Seward Park you are close to speciessong and shitscent. Songs of speed walkers, Pacific wrens, plodding joggers, chestnut-baked chickadees, radios from yachts moored offshore. Shitscents of dog, mallard, toddler, Canada goose. Crows in the round-crowned garry oaks send down drifts of pollen and scraps of moss as they flap indignant wings. Walkers move at all speeds, carrying pocketbooks, or wrist weights, or a white parasol, or the leash of a loping Laborador. Far off, twin Jet-Skis whine; nearby, a solitary fire-orange wasp buzzes thimbleberry.","title":"Garry Oak Prairie","credit":"Wendy Call","lat":"47.549232","long":"-122.252981","??":""},{"type":"Photograph","audio":"","link":"","photos":"https://lh4.googleusercontent.com/-dHPc0KFLzUA/VAqNLOzl8yI/AAAAAAAAAQk/rBdKA3zRBLk/s640/IMG_1604.JPG","text":"","title":"Poison Oy","credit":"Wendy Call","lat":"47.549236","long":"-122.252372","??":""}]
+module.exports=[{"type":"Audio Recording (at Soundcloud), Text","audio":"<iframe width=\"100%\" height=\"166\" scrolling=\"no\" frameborder=\"no\" src=\"https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/166005226&amp;color=ff5500&amp;auto_play=false&amp;hide_related=false&amp;show_comments=true&amp;show_user=true&amp;show_reposts=false\"></iframe>","link":"","photos":"\n","text":"On a day in early August, a group of children walked along with their two summer camp leaders, along Seward Park's Sqebeqsed Trail -- also known as the Spine Trail -- in southeast Seattle. A man stood in the forest, playing a sort of metal sitar and singing.","title":"Heard Along Sqebeqsed Trail","credit":"Wendy Call","lat":"47.549586","long":"-122.251114","category":"Trail"},{"type":"Photograph & Text","audio":"\n","link":"","photos":"https://lh6.googleusercontent.com/-laz6IzwfUwc/VAqNJ-qIzUI/AAAAAAAAAQc/1MfQi-BqSBk/s640/IMG_1581.JPG","text":"In 1923, the people of Yokohama sent us an eight-ton stone lantern as a thank-you for offering help after an earthquake killed thirty thousand Yokohamans. Two decades later, our bombs killed another eight thousand in that city. Nine decades later, the lantern stands amid Japanese maple and Pacific rhododendron; the scents of dogshit, human urine, and sun-wilted summer flowers swirl around it. The taiko-gata lantern was a gift, an oxidized plaque tells us, “symbolizing the peace and good-will that exists between Japan and the United States.” ","title":"Yokohama Taiko-Gata Lantern","credit":"Wendy Call","lat":"47.54976","long":"-122.257427","category":"Art"},{"type":"Text & 2 Photographs","audio":"","link":"","photos":"https://lh3.googleusercontent.com/-WVjLlF6m0QY/VAqNS1g1VbI/AAAAAAAAASs/ebS0q9aTmIY/s800/ClayStudioWPAsign.jpg, https://lh5.googleusercontent.com/-l6WxUHEo6FE/VAqNUewl5bI/AAAAAAAAAS0/wVkZTYi4pjI/s912/AndrewsBay2012.jpg","text":"Turn to the east, face our past. Turn to the west, face your reflection.","title":"At the Clay Studio","credit":"Wendy Call","lat":"47.54976","long":"-122.257427","category":"Art"},{"type":"Photograph & Text","audio":"\n","link":"","photos":"https://lh5.googleusercontent.com/-brrqjzTEO9E/VAqNWhuwxWI/AAAAAAAAARc/UvvoLYSGbec/s512/BathroomSkylight.jpg","text":"Bathroom view of Seattle sky: Moss molders. Leaves linger.","title":"Women's Room","credit":"Wendy Call","lat":"47.549759","long":"-122.256475","category":"Other"},{"type":"Photograph & Text","audio":"","link":"","photos":"https://lh6.googleusercontent.com/--0gOlO0zoIQ/VAqNVp4pH8I/AAAAAAAAAS8/vCPl1L4SS_g/s912/MtRainierfromBikeRack.jpg","text":"People shout at one another; sausage dogs trot on tangled leashes; kids feel the sting of hand-slaps and admonishment. (“You are not an adult!”) Over it all, over Lake Washington, Tahoma hovers. Impervious and imperial. Our land bows down to our mountain. Vine maple branches frame the mountain peak, with Mercer Island to the east and the low bump of Rainier Beach to the southwest.","title":"Rainier, Bikerack View","credit":"Wendy Call","lat":"47.549564","long":"-122.256661","category":"Nature"},{"type":"Photograph & Text","audio":"","link":"","photos":"https://lh5.googleusercontent.com/-C8J91pcbMBY/VAvVb7YyQDI/AAAAAAAAATY/pLWwDLoZLr4/s640/Bedrock.JPG","text":"Alki Beach and Seward Park, cardinal points on Seattle’s east-west axis, are connected by an invisible, treacherous line: the Seattle fault. An eon ago, an earthquake sent forests sliding into Lake Washington and a twenty-foot cliff bursting from the earth of Bailey Peninsula. Here on the north side of Seward Park, as at Alki, the quake broke bedrock though clay and moss, to the dim light of Northwestern days. ","title":"Scar(p)","credit":"Wendy Call","lat":"47.536475","long":"-122.255967","category":"Other"},{"type":"Link & Text","audio":"\n","link":"Link the words \"her final interview\" to: ","photos":"","text":"In the last interview of her life, poet Denise Levertov said of Mount Rainier, \"When it's out, I can see it from my work room and my kitchen window. I usually take paper and pencil in my pocket when I go down to the park. Often something starts as I'm walking around there.\"","title":"","credit":"","lat":"47.560208","long":"-122.255403","category":"Other"},{"type":"Link & Text","audio":"","link":"http://poems.com/special_features/prose/essay_warn.php","photos":"","text":"Seattle poet Emily Warn writes of Mount Rainier's influence on Denise Levertov, one of the most famous poets ever to live in Seattle: \"If 'Nature' in her poetry is a metonymy for spiritual understanding, then 'the mountain' stands for a divine presence hidden within, yet not of this material world....\"","title":"","credit":"","lat":"47.565792","long":"-122.253936","category":"Other"},{"type":"Photograph & Link","audio":"","link":"http://spectatorspots.blogspot.com/2012/06/we-come-looking.html","photos":"https://lh4.googleusercontent.com/-Xc65nmKJFOE/VAqNexWarzI/AAAAAAAAATE/pZhjCjL9QBY/s576/IMG_3088.JPG","text":"In June 2012, over three weekend afternoons, I led two dozen writers through a writing and nature walk at Seward Park. This is what one of them, Kristianne Huntsberger, wrote. ","title":"A Writing Spot","credit":"","lat":"47.555297","long":"-122.254394","category":"Art"},{"type":"Photograph","audio":"","link":"","photos":"http://cdn.c.photoshelter.com/img-get/I0000gcOguCU6ejo/s/900/900/American-Crow-portrait-Seward-Park-Seattle-9687.jpg","text":"","title":"American Crow","credit":"Thomas Bancroft","lat":"47.548889","long":"-122.256389","category":"Fauna"},{"type":"Photograph","audio":"","link":"","photos":"http://cdn.c.photoshelter.com/img-get/I0000Rqic3mwa2Dw/s/900/900/Hawthorn-berries-Seward-Park-Seattle.jpg","text":"","title":"Hawthorn Berries","credit":"Thomas Bancroft","lat":"47.553611","long":"-122.250556","category":"Nature"},{"type":"Photograph","audio":"","link":"","photos":"http://cdn.c.photoshelter.com/img-get/I0000P0OCn0WSZAA/s/900/900/High-Bush-Craneberry-Seward-Park-Seattle.jpg","text":"","title":"High Bush Cranberry","credit":"Thomas Bancroft","lat":"47.551111","long":"-122.250833","category":"Nature"},{"type":"Photograph","audio":"","link":"","photos":"http://cdn.c.photoshelter.com/img-get/I00006tb8RILewic/s/900/900/Mallard-Seward-Park-Seattle-9465.jpg","text":"","title":"Mallard","credit":"Thomas Bancroft","lat":"47.548889","long":"-122.254722","category":"Fauna"},{"type":"Photograph","audio":"","link":"","photos":"http://cdn.c.photoshelter.com/img-get/I0000TKsIYVed2cM/s/900/900/Seward-Park-Trail-Seward-Park-Seattle-1645.jpg","text":"","title":"Sqebeqsed Trail","credit":"Thomas Bancroft","lat":"47.556667","long":"-122.251944","category":"Trail"},{"type":"Photograph","audio":"","link":"","photos":"http://cdn.c.photoshelter.com/img-get/I0000oD1aRx_6ofk/s/900/900/Sunrise-at-Seward-Park-Seward-Park-Seattle.jpg","text":"","title":"Sunrise at South Beach","credit":"Thomas Bancroft","lat":"47.550278","long":"-122.248333","category":"Nature"},{"type":"Link & Text","audio":"","link":"","photos":"\n","text":"<p>My June 2012 writing workshops inspired one participating writer, Robert\n Francis Flor, to create a one-act play based on his memories of annual \npicnics on Pinoy Hill. </p><p style=\"text-align: center;\"><span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\">The beginning of a one-act play</span><em><span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\"> Pinoy Hill, Seward Park, 1957 </span></em><span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\">by Robert Francis Flor</span><br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<strong><span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\">Scene I </span></strong></p>\n<p><em><span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\">(Pinoy Hill in Seward Park, Seattle. 1957. Three picnic tables placed in a row. The table at one end is marked with a RESERVED sign. A teen boy sprawls across the center table.)</span></em><br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\"><strong>MAX:</strong> <em>(Acts bored. Swears.)</em> Why me? So unfair. <em>(Pounds table.) </em>It&rsquo;s the same every year. Boring. Same old dances. Same old table. Same music. Same faces. BORING! <em>(Lays down on bench next to table and closes eyes.)</em></span><br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<em><span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\">(An older Pinay woman (late-forties to early fifties) enters. She carries a shopping bag. Noticing him, she makes disgusting grunting and grumbling noises and mutters as she puts the bag on the table on the remaining, unreserved table.)</span></em><br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\"><strong>ROSARIO:</strong> Psst! Psst!</span><br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\"><strong>MAX: </strong><em>(Doesn&rsquo;t respond. Ignores her.)</em></span><br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\"><strong>ROSARIO:</strong> Psst! Halo! Magandang umaga sa iyo! <em>(MAX continues to ignore her.) </em>Boy! I said &ldquo;Halo!&rdquo;</span><br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\"><strong>MAX:</strong> I don&rsquo;t understand Filipino. An&rsquo; I&rsquo;m not a boy.</span><br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\"><strong>ROSARIO:</strong> Oh, American-born. I see. I said &ldquo;Hello. Good morning.&rdquo;</span><br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\"><strong>MAX: </strong><em>(Sits up.)</em> Can I help you?</span><br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\"><strong>ROSARIO:</strong> Are you saving that table? I would like it.</span><br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\"><strong>MAX:</strong> <em>(Stands.) </em>No can do, Auntie.</span><br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\"><strong>ROSARIO:</strong> Ha? Why &ldquo;no can do&rdquo;? You&rsquo;re the only one here. You use it just for sleep. My family is coming.</span><br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<br style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\" />\n<span style=\"font-family: calibri, arial, sans, sans-serif; font-size: 14px; white-space: pre-wrap;\"><strong>MAX:</strong> My dad would kill me if I gave up this table. I&rsquo;m saving it for my family. It&rsquo;s his orders.</span></p>\n\n","title":"Pinoy Hill, Seward Park, 1957","credit":"Robert Francis Flor","lat":"47.551975","long":"-122.255494","category":""},{"type":"Text & Photograph","audio":"","link":"","photos":"","text":"In a circle of vine maples, encircled today by black-and-yellow caution tape: Put your left hand on top of your right, pull down. And if you want to stop, just let go. Are you doing alright? The only adult in the group says, “I am pretty terrified.” They swing in harnesses, suspended from high vine-maple branches in their own, private rope swings. One boy hoists himself nearly to tree top, alights, and climbs around in tree-sky. “Oh, wow. How high is he up there?” He’s probably about at fifty feet. That’s like standing on top of a telephone pole. OK, kids, you’ve got fifteen minutes left. Some want to go higher, some are more than ready to return to earth. The tree-swingers have drawn a small crowd: a family of three and an older couple with matching white sun hats. A great blue egret stands pencil-slim on a South Bay piling. The boy who climbed to top-of-telephone-pole height, skims to the ground and leaps from the harness. “I had a piece of bark in my pants. How did that happen?” \nAnother boy swings fifteen feet off the ground, feet up, head down. Anybody remember what kind of tree you’re in? Only one does; the other children cheer. Two men jog by, one pushing a stroller, talking of 30K and 60K races. The climbing-swinging children are replaced by another group ready to harness up. Still, the heron waits. \n","title":"At the Vine Maples","credit":"Wendy Call","lat":"47.548802","long":"-122.256936","category":""},{"type":"Text & Photograph","audio":"","link":"","photos":"https://lh4.googleusercontent.com/-IraGuCoWVoA/VAqNPOxBwxI/AAAAAAAAAQ0/YOqE26Q3Lws/s720/IMG_2244.JPG","text":"Everywhere in Seward Park you are close to speciessong and shitscent. Songs of speed walkers, Pacific wrens, plodding joggers, chestnut-baked chickadees, radios from yachts moored offshore. Shitscents of dog, mallard, toddler, Canada goose. Crows in the round-crowned garry oaks send down drifts of pollen and scraps of moss as they flap indignant wings. Walkers move at all speeds, carrying pocketbooks, or wrist weights, or a white parasol, or the leash of a loping Laborador. Far off, twin Jet-Skis whine; nearby, a solitary fire-orange wasp buzzes thimbleberry.","title":"Garry Oak Prairie","credit":"Wendy Call","lat":"47.549232","long":"-122.252981","category":""},{"type":"Photograph","audio":"","link":"","photos":"https://lh4.googleusercontent.com/-dHPc0KFLzUA/VAqNLOzl8yI/AAAAAAAAAQk/rBdKA3zRBLk/s640/IMG_1604.JPG","text":"","title":"Poison Oy","credit":"Wendy Call","lat":"47.549236","long":"-122.252372","category":""}]
 },{}],3:[function(require,module,exports){
 /**
  * Module dependencies.
@@ -16383,7 +16438,7 @@ module.exports={
   },
   "name": "mapbox.js",
   "description": "mapbox javascript api",
-  "version": "2.1.0",
+  "version": "2.1.4",
   "homepage": "http://mapbox.com/",
   "repository": {
     "type": "git",
@@ -16418,61 +16473,17 @@ module.exports={
   "engines": {
     "node": "*"
   },
+  "readme": "# mapbox.js\n\n[![Build Status](https://travis-ci.org/mapbox/mapbox.js.png?branch=v1)](https://travis-ci.org/mapbox/mapbox.js)\n\nThis is the Mapbox Javascript API, version 2.x. It's built as a [Leaflet](http://leafletjs.com/)\nplugin. You can [read about its launch](http://mapbox.com/blog/mapbox-js-with-leaflet/).\n\n## [API](http://mapbox.com/mapbox.js/api/)\n\nManaged as Markdown in `API.md`, following the standards in `DOCUMENTING.md`\n\n## [Examples](http://mapbox.com/mapbox.js/example/v1.0.0/)\n\n## Usage\n\nRecommended usage is via the Mapbox CDN:\n\n```html\n<script src='https://api.tiles.mapbox.com/mapbox.js/v1.6.4/mapbox.js'></script>\n<link href='https://api.tiles.mapbox.com/mapbox.js/v1.6.4/mapbox.css' rel='stylesheet' />\n```\n\nThe `mapbox.js` file includes the Leaflet library. Alternatively, you can use `mapbox.standalone.js`, which does not include Leaflet (you will have to provide it yourself).\n\nSee the [API documentation](http://mapbox.com/mapbox.js/api/) and [Examples](http://mapbox.com/mapbox.js/example/v1.0.0/) for further help.\n\n## Usage with [Browserify](http://browserify.org/)\n\nInstall the mapbox.js module and add it to `dependencies` in package.json:\n\n```sh\nnpm install mapbox.js --save\n```\n\nRequire mapbox in your script:\n\n```js\n// main.js\n\nrequire('mapbox.js'); // <-- auto-attaches to window.L\n```\n\nBrowserify it:\n\n```sh\nbrowserify main.js -o bundle.js\n```\n\n## Usage with Bower\n\nYou can install `mapbox.js` with [bower](http://bower.io/) by running\n\n```sh\nbower install mapbox.js\n```\n\n## Building\n\nRequires [node.js](http://nodejs.org/) installed on your system.\n\n``` sh\ngit clone https://github.com/mapbox/mapbox.js.git\ncd mapbox.js\nnpm install\nmake\n```\n\nThis project uses [browserify](https://github.com/substack/node-browserify) to combine\ndependencies and installs a local copy when you run `npm install`.\n`make` will build the project in `dist/`.\n\n### Tests\n\nTest with [phantomjs](http://phantomjs.org/):\n\n``` sh\nnpm test\n```\n\nTo test in a browser, run a [local development server](https://gist.github.com/tmcw/4989751)\nand go to `/test`.\n\n### Version v0.x.x\n\n[Version v0.x.x can be accessed in the v0 branch.](https://github.com/mapbox/mapbox.js/tree/v0).\n\n### Editing Icons\n\nRequirements:\n\n    inkscape\n    pngquant\n    convert (part of imagemagick)\n\n1. Make edits to `theme/images/icons.svg`.\n2. Run `./theme/images/render.sh` to update sprites from your edits.\n3. Add a CSS reference with the appropriate pixel coordinate if adding a new icon.\n",
+  "readmeFilename": "README.md",
   "bugs": {
     "url": "https://github.com/mapbox/mapbox.js/issues"
   },
-  "_id": "mapbox.js@2.1.0",
+  "_id": "mapbox.js@2.1.4",
   "dist": {
-    "shasum": "133e3baa42151c65ef95d3d23053974dc5bd2abb",
-    "tarball": "http://registry.npmjs.org/mapbox.js/-/mapbox.js-2.1.0.tgz"
+    "shasum": "7392c39d49ada8c8d38f307a53628ad7bebf6e96"
   },
-  "_from": "mapbox.js@",
-  "_npmVersion": "1.3.24",
-  "_npmUser": {
-    "name": "tmcw",
-    "email": "tom@macwright.org"
-  },
-  "maintainers": [
-    {
-      "name": "tmcw",
-      "email": "macwright@gmail.com"
-    },
-    {
-      "name": "tristen",
-      "email": "tristen.brown@gmail.com"
-    },
-    {
-      "name": "ansis",
-      "email": "ansis.brammanis@gmail.com"
-    },
-    {
-      "name": "yhahn",
-      "email": "young@developmentseed.org"
-    },
-    {
-      "name": "willwhite",
-      "email": "will@mapbox.com"
-    },
-    {
-      "name": "jfirebaugh",
-      "email": "john.firebaugh@gmail.com"
-    },
-    {
-      "name": "heyitsgarrett",
-      "email": "heyitsgarrett@gmail.com"
-    },
-    {
-      "name": "mourner",
-      "email": "agafonkin@gmail.com"
-    },
-    {
-      "name": "mapbox",
-      "email": "accounts@mapbox.com"
-    }
-  ],
-  "directories": {},
-  "_shasum": "133e3baa42151c65ef95d3d23053974dc5bd2abb",
-  "_resolved": "https://registry.npmjs.org/mapbox.js/-/mapbox.js-2.1.0.tgz"
+  "_from": "mapbox.js@^2.1.0",
+  "_resolved": "https://registry.npmjs.org/mapbox.js/-/mapbox.js-2.1.4.tgz"
 }
 
 },{}],32:[function(require,module,exports){
@@ -16831,6 +16842,9 @@ var GeocoderControl = L.Control.extend({
             if (resp.results && resp.results.features) {
                 features = resp.results.features;
             }
+            if (features.length) {
+                this.fire('found', {results: resp.results});
+            }
             this._displayResults(features);
         }
     },
@@ -17112,7 +17126,6 @@ module.exports.gridControl = function(_, options) {
 'use strict';
 
 var util = require('./util'),
-    url = require('./url'),
     request = require('./request'),
     grid = require('./grid');
 
@@ -17334,7 +17347,7 @@ module.exports.gridLayer = function(_, options) {
     return new GridLayer(_, options);
 };
 
-},{"./grid":36,"./load_tilejson":43,"./request":47,"./url":51,"./util":52}],39:[function(require,module,exports){
+},{"./grid":36,"./load_tilejson":43,"./request":47,"./util":52}],39:[function(require,module,exports){
 require('./leaflet');
 require('./mapbox');
 
@@ -17804,7 +17817,7 @@ function icon(fp, options) {
             large: [35, 90]
         },
         size = fp['marker-size'] || 'medium',
-        symbol = (fp['marker-symbol']) ? '-' + fp['marker-symbol'] : '',
+        symbol = ('marker-symbol' in fp && fp['marker-symbol'] !== '') ? '-' + fp['marker-symbol'] : '',
         color = (fp['marker-color'] || '7e7e7e').replace('#', '');
 
     return L.icon({
@@ -17942,8 +17955,8 @@ var ShareControl = L.Control.extend({
         var tilejson = this._tilejson || this._map._tilejson || {},
             url = encodeURIComponent(this.options.url || tilejson.webpage || window.location),
             name = encodeURIComponent(tilejson.name),
-            image = urlhelper(tilejson.id + '/' + this._map.getCenter().lng + ',' + this._map.getCenter().lat + ',' + this._map.getZoom() + '/600x600.png', this.options.accessToken),
-            embed = urlhelper(tilejson.id + '.html', this.options.accessToken),
+            image = urlhelper('/' + tilejson.id + '/' + this._map.getCenter().lng + ',' + this._map.getCenter().lat + ',' + this._map.getZoom() + '/600x600.png', this.options.accessToken),
+            embed = urlhelper('/' + tilejson.id + '.html', this.options.accessToken),
             twitter = '//twitter.com/intent/tweet?status=' + name + ' ' + url,
             facebook = '//www.facebook.com/sharer.php?u=' + url + '&t=' + encodeURIComponent(tilejson.name),
             pinterest = '//www.pinterest.com/pin/create/button/?url=' + url + '&media=' + image + '&description=' + tilejson.name,
@@ -18037,8 +18050,7 @@ module.exports = {
 },{}],50:[function(require,module,exports){
 'use strict';
 
-var util = require('./util'),
-    url = require('./url');
+var util = require('./util');
 
 var TileLayer = L.TileLayer.extend({
     includes: [require('./load_tilejson')],
@@ -18131,7 +18143,7 @@ module.exports.tileLayer = function(_, options) {
     return new TileLayer(_, options);
 };
 
-},{"./load_tilejson":43,"./url":51,"./util":52}],51:[function(require,module,exports){
+},{"./load_tilejson":43,"./util":52}],51:[function(require,module,exports){
 'use strict';
 
 var config = require('./config'),

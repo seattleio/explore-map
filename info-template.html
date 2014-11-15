@@ -1,6 +1,9 @@
 <section class="modal-inner">
   <a id="close-modal" href="#">x</a>
   <h2 class="location-title">{{ title }}</h2>
+  <div class="text">
+    Category: {{{ category }}}
+  </div>
   
   {{#each images}}
   <div class="image">
@@ -11,6 +14,7 @@
   <div class="text">
     {{{ text }}}
   </div>
+
   <!--
   <p><b><a href="{{ link }}" target="_blank">Learn more</a></b></p>
   -->
