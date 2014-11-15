@@ -7,6 +7,7 @@
   },
   "main": "map.js",
   "scripts": {
+    "inline": "html-inline -i index.html -o bundle.html",
     "parse-csv": "node bin/parse-csv.js",
     "bundle-css": "rework-npm style.css -o assets/bundle.css",
     "bundle-js": "browserify app.js -o assets/bundle.js -t brfs",
@@ -32,6 +33,7 @@
     "browserify": "^5.11.2",
     "csv-parser": "^1.4.6",
     "gazer": "0.0.3",
+    "html-inline": "^1.1.0",
     "myth": "~0.3.0",
     "rework-npm-cli": "0.0.1",
     "serve": "^1.4.0",
