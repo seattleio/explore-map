@@ -41,33 +41,7 @@ templates.list = Handlebars.compile(
 L.Icon.Default.imagePath = 'node_modules/leaflet/dist/images/';
 
 
-/* 
-* create map using mapbox plugin 
-*/
 
-var streets = L.mapbox.tileLayer('sethvincent.de840f5b');
-
-var map = L.map('map', {
-  center: [47.555, -122.252],
-  zoom: 15,
-  layers: [streets]
-});
-
-
-var location = L.marker([47, -122], {
-  icon: L.mapbox.marker.icon({
-    'marker-size': 'medium',
-    'marker-color': '#fa0'
-  })
-}).addTo(map);
-
-movement.on('data', function(data) {
-  location.setLatLng(new L.LatLng(data.coords.latitude, data.coords.longitude));
-});
-
-movement.on('error', function(err) {
-  //console.error(err)
-});
 
 on(document.body, '.nav a', 'click', function (e) {
   var id = e.target.id;
@@ -88,12 +62,15 @@ window.onresize = function (e) {
   if (modal) resizeModal();
 };
 
-data.forEach(addMarker);
+
 
 
 /* 
 * add a marker to map from json data 
 */
+
+var markers = [];
+data.forEach(addMarker);
 
 function addMarker (row, i) {
   var latlng = { lat: row['lat'], lng: row['long'] };
@@ -106,13 +83,42 @@ function addMarker (row, i) {
     })
   });
 
-  marker.addTo(map);
+  markers.push(marker);
 
   marker.on('click', function(e) {
     modal(content);
   });
 }
 
+var markerGroup = L.layerGroup(markers);
+
+/* 
+* create map using mapbox plugin 
+*/
+
+var streets = L.mapbox.tileLayer('sethvincent.de840f5b');
+
+var map = L.map('map', {
+  center: [47.555, -122.252],
+  zoom: 15,
+  layers: [streets, markerGroup]
+});
+
+
+var location = L.marker([47, -122], {
+  icon: L.mapbox.marker.icon({
+    'marker-size': 'medium',
+    'marker-color': '#fa0'
+  })
+}).addTo(map);
+
+movement.on('data', function(data) {
+  location.setLatLng(new L.LatLng(data.coords.latitude, data.coords.longitude));
+});
+
+movement.on('error', function(err) {
+  //console.error(err)
+});
 
 function modal (content) {
   if (document.querySelector('.modal')) {
