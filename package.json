@@ -1,12 +1,13 @@
 {
-  "name": "seward-park-map",
+  "name": "explore-map",
   "description": "",
-  "version": "0.0.0",
+  "version": "1.1.0",
   "repository": {
-    "url": "git://github.com/sethvincent/seward-park-map.git"
+    "url": "git://github.com/seattleio/explore-map.git"
   },
-  "main": "map.js",
+  "main": "prebuilt.js",
   "scripts": {
+    "inline": "html-inline -i index.html -o bundle.html",
     "parse-csv": "node bin/parse-csv.js",
     "bundle-css": "rework-npm style.css -o assets/bundle.css",
     "bundle-js": "browserify app.js -o assets/bundle.js -t brfs",
@@ -15,6 +16,11 @@
     "watch-css": "gazer -p style.css npm run bundle-css",
     "watch": "npm run watch-js & npm run watch-css",
     "start": "serve -p 3123 & npm run watch"
+  },
+  "browserify": {
+    "transform": [
+      "brfs"
+    ]
   },
   "dependencies": {
     "component-delegate": "^0.2.3",
@@ -32,6 +38,7 @@
     "browserify": "^5.11.2",
     "csv-parser": "^1.4.6",
     "gazer": "0.0.3",
+    "html-inline": "^1.1.0",
     "myth": "~0.3.0",
     "rework-npm-cli": "0.0.1",
     "serve": "^1.4.0",
