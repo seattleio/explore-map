@@ -63,6 +63,26 @@ templates.list = Handlebars.compile(
 L.Icon.Default.imagePath = 'node_modules/leaflet/dist/images/';
 
 
+on(document.body, '.nav a', 'click', function (e) {
+  var id = e.target.id;
+  
+  if (id === 'about-view') {
+    var content = fs.readFileSync('about.html', 'utf8');
+    modal(content);
+  }
+  
+  else {
+    var content = templates.list({ locations: data });
+    modal(content);
+  }
+});
+
+window.onresize = function (e) {
+  var modal = document.querySelector('.modal');
+  if (modal) resizeModal();
+};
+
+
 /* 
 * create map using mapbox plugin 
 */
@@ -83,71 +103,14 @@ var location = L.marker([47, -122], {
   })
 }).addTo(map);
 
-movement.on('data', function(data) {
-  location.setLatLng(new L.LatLng(data.coords.latitude, data.coords.longitude));
-});
-
-movement.on('error', function(err) {
-  //console.error(err)
-});
-
-on(document.body, '.nav a', 'click', function (e) {
-  var id = e.target.id;
-  
-  if (id === 'about-view') {
-    var content = fs.readFileSync('about.html', 'utf8');
-    modal(content);
-  }
-  
-  else {
-    var content = templates.list({ locations: data });
-    modal(content);
-  }
-});
-
-window.onresize = function (e) {
-  var modal = document.querySelector('.modal');
-  if (modal) resizeModal();
-};
-
-data.forEach(addMarker);
-
-function updateWithFilters() {
-  checkedCategories = [];
-  var categoryCheckboxes = document.getElementsByClassName('categoryCheckbox');
-  for (var i = 0; i < categoryCheckboxes.length; i++) {
-      if (categoryCheckboxes[i].checked) {
-	  checkedCategories.push(categoryCheckboxes[i]);
-      }
-  }
-  map.featureLayer.setFilter(
-  data.filter(filterByCategory).forEach(addMarker);
-}
-
-function filterByCategory(element) {
-  return element.category in checkedCategories;
-}
-
-function containsCategory(categories, c) {
-  for (var i = 0; i < categories.length; i++) {
-    if (categories[i] === c) return true;
-  }
-  return false;
-}
-
-function getAllCategories(data) {
-  var categories = [];
-  for (var i = 0; i < data.length; i++) {
-    if (!containsCategory(categories, data[i].category)) {
-	categories.push(data[i].category);
-    }
-  }
-  return categories;
-}
 
 /* 
 * add a marker to map from json data 
 */
+
+var markerGroup = new L.FeatureGroup();
+
+updateWithFilters();
 
 function addMarker (row, i) {
   var latlng = { lat: row['lat'], lng: row['long'] };
@@ -160,13 +123,21 @@ function addMarker (row, i) {
     })
   });
 
-  marker.addTo(map);
+  markerGroup.addLayer(marker);
 
   marker.on('click', function(e) {
     modal(content);
   });
 }
 
+
+movement.on('data', function(data) {
+  location.setLatLng(new L.LatLng(data.coords.latitude, data.coords.longitude));
+});
+
+movement.on('error', function(err) {
+  //console.error(err)
+});
 
 function modal (content) {
   if (document.querySelector('.modal')) {
@@ -212,4 +183,51 @@ function createImageArrays (data) {
   });
   
   return data;
+}
+
+function updateWithFilters() {
+  checkedCategories = [];
+  var categoryCheckboxes = document.getElementsByClassName('categoryCheckbox');
+  for (var i = 0; i < categoryCheckboxes.length; i++) {
+      if (categoryCheckboxes[i].checked) {
+	  checkedCategories.push(categoryCheckboxes[i].value);
+      }
+  }
+  console.log('checked:' + checkedCategories);
+  markerGroup.clearLayers();
+  map.removeLayer(markerGroup);
+  if (checkedCategories.length > 0) {
+      data.filter(filterByCategory).forEach(addMarker);
+  } else {
+      data.forEach(addMarker);
+  }
+  map.addLayer(markerGroup);
+}
+
+function filterByCategory(element) {
+  console.log(element.category);
+  console.log(checkedCategories);
+  for (var i = 0; i < checkedCategories.length; i++) {
+    if (checkedCategories[i] === element.category) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function containsCategory(categories, c) {
+  for (var i = 0; i < categories.length; i++) {
+    if (categories[i] === c) return true;
+  }
+  return false;
+}
+
+function getAllCategories(data) {
+  var categories = [];
+  for (var i = 0; i < data.length; i++) {
+    if (!containsCategory(categories, data[i].category)) {
+	categories.push(data[i].category);
+    }
+  }
+  return categories;
 }
